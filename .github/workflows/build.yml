@@ -1,0 +1,32 @@
+name: Build Armbian Image
+on:
+  workflow_dispatch:
+    inputs:
+      armbian_board:
+        description: "Select device board (e.g., orangepizero3)"
+        required: true
+        default: "orangepizero3"
+      armbian_release:
+        description: "Select OS Release (e.g., bookworm, jammy)"
+        required: true
+        default: "bookworm"
+      armbian_ui:
+        description: "Select UI (e.g., server, minimal, xfce)"
+        required: true
+        default: "server"
+
+jobs:
+  build-armbian:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Armbian image
+        uses: armbian/build@main
+        with:
+          armbian_token: "${{ secrets.GITHUB_TOKEN }}" # GitHub token for authentication
+          armbian_board: "${{ github.event.inputs.armbian_board }}"
+          armbian_release: "${{ github.event.inputs.armbian_release }}"
+          armbian_target: "build" # Specifies building a full image
+          armbian_ui: "${{ github.event.inputs.armbian_ui }}"
