@@ -1,0 +1,30 @@
+name: Personal Armbian Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      override_args:
+        description: "Temporary extra compile.sh arguments"
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load config
+        id: config
+        run: |
+          echo "CONFIG_ARGS=$(cat armbian.conf | xargs)" >> $GITHUB_ENV
+
+      - name: Build Armbian
+        uses: armbian/build@main
+        with:
+          armbian_token: ${{ secrets.GITHUB_TOKEN }}
+          armbian_extra_args: >
+            ${{ env.CONFIG_ARGS }}
+            ${{ github.event.inputs.override_args }}
+
+          armbian_publish: true
