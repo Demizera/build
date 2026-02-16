@@ -37,29 +37,6 @@ on:
           - xfce
         default: server
 
-      build_minimal:
-        description: "Build minimal image?"
-        type: boolean
-        default: false
-
-      kernel_only:
-        description: "Build kernel only?"
-        type: boolean
-        default: false
-
-      compress_image:
-        description: "Compress output image?"
-        type: boolean
-        default: true
-
-      extra_packages:
-        description: "Additional packages (space separated)"
-        required: false
-
-      extra_args:
-        description: "Advanced raw compile.sh arguments"
-        required: false
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -77,12 +54,3 @@ jobs:
           armbian_kernel_branch: ${{ github.event.inputs.branch }}
           armbian_ui: ${{ github.event.inputs.ui }}
           armbian_target: build
-
-          armbian_extra_args: >
-            BUILD_MINIMAL=${{ github.event.inputs.build_minimal }}
-            KERNEL_ONLY=${{ github.event.inputs.kernel_only }}
-            COMPRESS_OUTPUTIMAGE=${{ github.event.inputs.compress_image }}
-            PACKAGE_LIST_ADDITIONAL="${{ github.event.inputs.extra_packages }}"
-            ${{ github.event.inputs.extra_args }}
-
-          armbian_publish: true
