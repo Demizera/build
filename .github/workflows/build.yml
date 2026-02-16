@@ -1,32 +1,88 @@
-name: Build Armbian Image
+name: Configurable Armbian Builder
+
 on:
   workflow_dispatch:
     inputs:
-      armbian_board:
-        description: "Select device board (e.g., orangepizero3)"
+
+      board:
+        description: "Target board"
         required: true
         default: "orangepizero3"
-      armbian_release:
-        description: "Select OS Release (e.g., bookworm, jammy)"
+
+      release:
+        description: "Base OS release"
         required: true
-        default: "bookworm"
-      armbian_ui:
-        description: "Select UI (e.g., server, minimal, xfce)"
-        required: true
-        default: "server"
+        type: choice
+        options:
+          - bookworm
+          - jammy
+          - noble
+        default: bookworm
+
+      branch:
+        description: "Kernel branch"
+        type: choice
+        options:
+          - current
+          - edge
+          - legacy
+        default: current
+
+      ui:
+        description: "UI type"
+        type: choice
+        options:
+          - minimal
+          - server
+          - xfce
+        default: server
+
+      build_minimal:
+        description: "Build minimal image?"
+        type: boolean
+        default: false
+
+      kernel_only:
+        description: "Build kernel only?"
+        type: boolean
+        default: false
+
+      compress_image:
+        description: "Compress output image?"
+        type: boolean
+        default: true
+
+      extra_packages:
+        description: "Additional packages (space separated)"
+        required: false
+
+      extra_args:
+        description: "Advanced raw compile.sh arguments"
+        required: false
 
 jobs:
-  build-armbian:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Build Armbian image
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Armbian
         uses: armbian/build@main
         with:
-          armbian_token: "${{ secrets.GITHUB_TOKEN }}" # GitHub token for authentication
-          armbian_board: "${{ github.event.inputs.armbian_board }}"
-          armbian_release: "${{ github.event.inputs.armbian_release }}"
-          armbian_target: "build" # Specifies building a full image
-          armbian_ui: "${{ github.event.inputs.armbian_ui }}"
+          armbian_token: ${{ secrets.GITHUB_TOKEN }}
+
+          armbian_board: ${{ github.event.inputs.board }}
+          armbian_release: ${{ github.event.inputs.release }}
+          armbian_kernel_branch: ${{ github.event.inputs.branch }}
+          armbian_ui: ${{ github.event.inputs.ui }}
+          armbian_target: build
+
+          armbian_extra_args: >
+            BUILD_MINIMAL=${{ github.event.inputs.build_minimal }}
+            KERNEL_ONLY=${{ github.event.inputs.kernel_only }}
+            COMPRESS_OUTPUTIMAGE=${{ github.event.inputs.compress_image }}
+            PACKAGE_LIST_ADDITIONAL="${{ github.event.inputs.extra_packages }}"
+            ${{ github.event.inputs.extra_args }}
+
+          armbian_publish: true
